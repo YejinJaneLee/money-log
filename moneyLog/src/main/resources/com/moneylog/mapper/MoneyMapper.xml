@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moneylog.mapper.MoneyMapper">
+	<select id="getList" resultType="com.moneylog.domain.MoneyVO">
+<![CDATA[
+	SELECT * FROM tbl_moneylog
+]]>
+	</select>
+	<insert id="insert">
+<![CDATA[
+	INSERT INTO tbl_moneylog
+	(
+		mno
+	  , paydate
+	  , paymethod
+	  , amount
+	  , item
+	  , ownerid
+	  , category
+	)
+	VALUES
+	(
+		SEQ_MOENYLOG.nextval
+	  , #{payDate}
+	  , #{payMethod}
+	  , #{amount}
+	  , #{item}
+	  , #{ownerId}
+	  , #{category}
+	)
+]]>	
+	</insert>
+	<update id="update">
+<![CDATA[
+	UPDATE tbl_moneylog
+	   SET paydate	= #{payDate}
+		 , payMethod= #{payMethod}
+		 , item		= #{item}
+		 , category	= #{category}
+	 WHERE mno = #{mno}
+]]>	
+	</update>
+	<delete id="delete">
+<![CDATA[
+	DELETE 
+	  FROM tbl_moneylog
+	 WHERE mno = #{mno}
+]]>	
+	</delete>
+</mapper>
