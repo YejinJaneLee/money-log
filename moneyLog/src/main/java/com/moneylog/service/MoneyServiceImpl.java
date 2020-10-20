@@ -33,9 +33,10 @@ public class MoneyServiceImpl implements MoneyService{
 	}
 
 	@Override
-	public void regist(MoneyVO money) {
-		// TODO Auto-generated method stub
+	public int regist(MoneyVO vo) {
+		log.info("[MoneyService] regist == >");
 		
+		return mapper.insert(vo);
 	}
 
 	@Override

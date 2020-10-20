@@ -1,5 +1,5 @@
-<%@ page language="java" contentType="text/html; charset=EUC-KR"
-    pageEncoding="EUC-KR"%>
+<%@ page language="java" contentType="text/html; charset=utf-8"
+    pageEncoding="utf-8"%>
 <%@ taglib prefix="c"	uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt"	uri="http://java.sun.com/jsp/jstl/fmt" %>
     
@@ -37,44 +37,57 @@ body{
 <script type="text/javascript" src="/resources/js/excel.js"></script>
 <script type="text/javascript">
 $(document).ready(function () {
-	$("#file").on("change", function (e) {
-		var files = $(this)[0].files;
-		var fileName = files[0].name;
-		$("#path").val(fileName);
+	// TESTÏö©
+	/* excelService.read("C:\\upload\\2020\\10\\19\\065e86cf-54d8-4af6-bcf0-ad7e98e233c0_Í±∞ÎûòÎÇ¥Ïó≠Ï°∞Ìöå20200916.xls", function(result){
+		setData(result);
+	}); */
+	
+	var list = [];
+	$("#excelList").on("change", "select[id^=selectCol]", function(){
+		var selectVal	= $(this).val();
+		var prevVal		= $(this).data('val');
 		
-		excelService.read(fileName, function(result){
-			var html = [];
-			
-			html.push("<table>");
-			$.each(result, function(i, row){
-				html.push("<tr>");
-				$.each(row, function(j, data){
-					if (i == 0) {
-						if (j == 0) {
-							html.push("<td></td>");
-						}
-						html.push("<th>");
-						html.push("	<select id='selectCol_" + j +"'>");
-						html.push("		<option value=''>-</option>");
-						html.push("		<option value='payDate'>≥Ø¬•</option>");
-						html.push("		<option value='item'>«◊∏Ò</option>");
-						html.push("		<option value='amount'>∫ÒøÎ</option>");
-						html.push("	</select><br/>");
-						html.push(data);
-						html.push("</th>");
-					} else {
-						if (j == 0) {
-							html.push("<td><input type='checkbox' id='row_" + i + "' checked/></td>");
-						}
-						html.push("<td id='column_" + i + j + "'>" + data + "</td>");
-					}
+		if ($.inArray(selectVal, list) < 0) {
+			if (selectVal != "") {
+				list.push(selectVal);
+			}
+		} else {
+			alert("Ïù¥ÎØ∏ ÏÑ†ÌÉùÎêú Í∞íÏûÖÎãàÎã§.");
+			$(this).val(prevVal);
+			return;
+		}
+		
+		if (prevVal !== undefined) {
+			list.splice($.inArray(prevVal, list), 1);
+		}
+		
+		$(this).data('val', $(this).val());
+	});
+	
+	$("#file").on("change", function (e) {
+		var file = $(this)[0].files[0];
+		var fileName = file.name;
+		 
+		$("#path").text(fileName);
+		
+		var formData = new FormData();
+		formData.append("uploadFile", file);
+		
+		$.ajax({
+			type: 'post',
+			url: '/uploadFile',
+			processData : false,
+			contentType: false,
+			data: formData,
+			type: 'POST',
+			dataType: 'text',
+			success: function(result){
+				var path = decodeURIComponent(result);
+				
+				excelService.read(path, function(result){
+					setData(result);
 				});
-				html.push("</tr>");
-			});
-			html.push("</table>");
-			
-			$("#excelList").append(html.join(""));
-			
+			}
 		});
 	});
 	
@@ -83,26 +96,7 @@ $(document).ready(function () {
 		var payDate = [];
 		var amount = [];
 		
-		$("select[id^=selectCol] option:selected").each(function(){
-			if ($(this).val() != "") {
-				var type = $(this).val();
-				
-				var selectedColumn = $(this).parent().attr("id");
-				selectedColumn = selectedColumn.split("_")[1];
-				
-				$("input[type=checkbox]:checked").each(function(){
-					var selectedRow = $(this).attr("id");
-					selectedRow = selectedRow.split("_")[1];
-					if (type == "item") {
-						item.push($("#column_" + selectedRow + selectedColumn).text());
-					} else if (type == "payDate") {
-						payDate.push($("#column_" + selectedRow + selectedColumn).text());
-					} else if (type == "amount") {
-						amount.push($("#column_" + selectedRow + selectedColumn).text());
-					}
-				});
-			}
-		}); 
+		// ÏÑ†ÌÉù ÏïàÎêú Í∞í Ï≤¥ÌÅ¨
 		
 		var arr = new Array();
 		$("input[type=checkbox]:checked").each(function(){
@@ -114,47 +108,96 @@ $(document).ready(function () {
 			$("select[id^=selectCol] option:selected").each(function(){
 				if ($(this).val() != "") {
 					var type = $(this).val();
-					
 					var selectedColumn = $(this).parent().attr("id");
 					selectedColumn = selectedColumn.split("_")[1];
 					
-					obj[type] = $("#column_" + selectedRow + selectedColumn).text();
-					
-					arr.push(obj);
+					if (type == "payDate") {
+						obj[type] = toDate($("#column_" + selectedRow + selectedColumn).text());
+					} else if (type == "amount") {
+						obj[type] = parseInt($("#column_" + selectedRow + selectedColumn).text());
+					} else {
+						obj[type] = $("#column_" + selectedRow + selectedColumn).text();
+					}
 				}
 			}); 
+			arr.push(obj);
 		});
-		console.log(arr);
 		
-		/* var $select = $("select[id^=selectCol]");
-		
-		$select.each(function(){
-			var $this = $(this);
-			$this.
+		excelService.addList(arr, function(result) {
+			alert(result);
 		});
-		*/
-		
 		
 	});
+	
+	$("#loadBtn").on("click", function(){
+		$('#file').click();
+	});
+	
 });
+function toDate(str){
+	var yyyyMMdd = String(str);
+	
+	var year = yyyyMMdd.substring(0,4);
+	var month = yyyyMMdd.substring(5,7);
+	var date = yyyyMMdd.substring(8,10);
+	
+	return new Date(Number(year), Number(month)-1, Number(date))
+}
 
+function setData(result) {
+	
+	var html = [];
+	
+	html.push("<table>");
+	$.each(result, function(i, row){
+		html.push("<tr>");
+		$.each(row, function(j, data){
+			if (i == 0) {
+				if (j == 0) {
+					html.push("<td></td>");
+				}
+				html.push("<th>");
+				html.push("	<select id='selectCol_" + j +"'>");
+				html.push("		<option value=''>-</option>");
+				html.push("		<option value='payDate'>ÎÇ†Ïßú</option>");
+				html.push("		<option value='item'>Ìï≠Î™©</option>");
+				html.push("		<option value='amount'>ÎπÑÏö©</option>");
+				html.push("	</select><br/>");
+				html.push(data);
+				html.push("</th>");
+			} else {
+				if (j == 0) {
+					html.push("<td><input type='checkbox' id='row_" + i + "' checked/></td>");
+					//html.push("<td><input type='checkbox' id='row_" + i + "' /></td>");
+				}
+				html.push("<td id='column_" + i + j + "'>" + data + "</td>");
+			}
+		});
+		html.push("</tr>");
+	});
+	html.push("</table>");
+	
+	$("#excelList").append(html.join(""));
+		
+}
 </script>
 <body>
 <div class="header">
 </div>
 <div class="content" style="min-width:1000px;">
 	<div class="left">
-		<li>ªÁøÎ¿⁄ ¡§∫∏ ºˆ¡§</li>
-		<li>ƒ∂∏∞¥ı µ•¿Ã≈Õ ∞°¡Æø¿±‚</li>
+		<li>ÏÇ¨Ïö©Ïûê Ï†ïÎ≥¥ ÏàòÏ†ï</li>
+		<li>Ï∫òÎ¶∞Îçî Îç∞Ïù¥ÌÑ∞ Í∞ÄÏ†∏Ïò§Í∏∞</li>
 	</div>
 	
 	<div class="right">
-		<div id="fileLoad" >
-			<input type="file" id="file" style="display:none;"/>
-			<input type="text" id="path"/> <button id="btn" onclick="$('#file').click();">Load</button>
+		<div id="top" style="height:30px; width:70%;">
+			<span id="fileLoad" style="float:left;">
+				<input type="file" id="file" style="display:none;" accept="application/vnd.ms-excel" />
+				<button id="loadBtn">Load</button><span id="path"></span> 
+			</span>
+			<button id="registBtn" style="float:right;">Îì±Î°ùÌïòÍ∏∞</button>
 		</div>
-		<button id="registBtn">µÓ∑œ«œ±‚</button>
-		
 		<div id="excelList">
 		</div>
 	</div>

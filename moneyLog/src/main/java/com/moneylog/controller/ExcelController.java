@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.moneylog.domain.MoneyVO;
+import com.moneylog.service.MoneyService;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -37,6 +38,7 @@ import lombok.extern.log4j.Log4j;
 @AllArgsConstructor
 public class ExcelController {
 	
+	private MoneyService service;
 	/**
 	 * (ø¢ºø)∆ƒ¿œ æ˜∑ŒµÂ
 	 * 
@@ -84,8 +86,8 @@ public class ExcelController {
 	 * @param	path	∆ƒ¿œ∞Ê∑Œ
 	 * @return	list	ø¢ºø µ•¿Ã≈Õ
 	 */
-	@GetMapping(value="/readFile", produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<List<List<String>>> readFile(@RequestParam("path") String path) {
+	@GetMapping(value="/readExcel", produces=MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<List<List<String>>> readExcel(@RequestParam("path") String path) {
 		List<List<String>> l_ExcelList = new ArrayList<>();
 		
 		try {
@@ -157,8 +159,22 @@ public class ExcelController {
 	}
 	
 	@PostMapping(value="/registList", consumes = "application/json", produces = {MediaType.TEXT_PLAIN_VALUE})
-	public static void registExcelList (@RequestBody MoneyVO vo) {
-		vo.setOwnerId("test");
+	public ResponseEntity<String> registExcelList (@RequestBody List<MoneyVO> list) {
+		boolean b_Result = true;
+		
+		for (MoneyVO vo : list) {
+			vo.setOwnerId("test");
+			vo.setPayMethod("credit");
+			vo.setCategory("");
+			
+			int insertCount = service.regist(vo);
+			
+			if (insertCount < 1) {
+				b_Result = false;
+			}
+		}
+		
+		return b_Result ? new ResponseEntity<>("success", HttpStatus.OK) : new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
 }
