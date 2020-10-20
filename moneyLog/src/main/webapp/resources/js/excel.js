@@ -3,32 +3,14 @@
  */
 
 var excelService = (function(){
-	function read(fileName, callback) {
-		
-		/*$.ajax({
-			type: 'post',
-			url: '/readExcel',
-			processData: false,
-			contentType	: "application/json; charset=utf-8",
-			//data: formData,
-			type: 'POST',
-			dataType: 'json',
-			success: function(result, status, xhr){
-				//console.log(result);
-				
-				if (callback){
-					callback(result);
-				}
-			}
-		});*/
-		
-		$.getJSON('/readExcel.json', {fileName : fileName}, function(data){
+	function read(path, callback) {
+		$.getJSON('/readExcel.json', {path : path}, function(data){
 			if (callback){
 				callback(data);
 			}
 		});
 	}
-	
+
 	function addList(list, callback, error){
 		console.log("====> add");
 		
