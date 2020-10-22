@@ -3,9 +3,10 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.moneylog.mapper.MoneyMapper">
-	<select id="getList" resultType="com.moneylog.domain.MoneyVO">
+	<select id="getListByMonth" resultType="com.moneylog.domain.MoneyVO">
 <![CDATA[
 	SELECT * FROM tbl_moneylog
+	WHERE to_char(paydate, 'MM') = #{month}
 ]]>
 	</select>
 	<insert id="insert">

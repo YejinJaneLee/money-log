@@ -56,6 +56,7 @@
 #list {
 	overflow-y: scroll;
 	height: 674px;
+	border : 1px solid #EEE;
 }
 
 #list div[id^=list] {
@@ -68,14 +69,18 @@ body{
 	margin: 0px;
 }
 </style>
+<jsp:useBean id="today" class="java.util.Date" />
+<fmt:formatDate value="${today}" pattern="yyyyMMddhhmm" var="nowDate" />
 <script src="/resources/js/jquery-3.5.1.min.js"></script>
-<script type="text/javascript" src="/resources/js/calendar.js"></script>
+<script type="text/javascript" src="<c:url value="/resources/js/calendar.js"><c:param name="v" value="${nowDate}"/></c:url>"></script>
+
 <script type="text/javascript">
+	
 	var days = new Array('SUN', 'MON', 'TUE', 'WEN', 'THU', 'FRI', 'SAT');
 	$(document).ready(function(){
 		
-		setCalendar(2020, 10);
-		setDateList(2020, 10);
+		setCalendar(2020, 08);
+		setDateList(2020, 08);
 	});
 	
 	function setCalendarHeader() {
@@ -130,7 +135,7 @@ body{
 			}
 		}
 		$("#calendar").append(html);
-		showItems();
+		showItems(setDate(Month));
 	}
 	
 	const setDate = date => {
@@ -141,31 +146,31 @@ body{
 	}
 	
 	const setDateList = (Year,Month) => {
-		//const startDate = new Date(Year, Month - 1, 1);
 		const endDate = new Date(Year, Month, 0);
 		let html = "";
 		
 		for (let i=1; i <= endDate.getDate(); i++) {
 			html += "<div id='list_" + [Year, (Month > 9 ? '' : '0') + Month,(i > 9 ? '' : '0') + i].join('') + "'>";
-			html += [Year , '/', Month , '/', setDate(i)].join('') + "</div>";
+			html += [Year , '/', setDate(Month) , '/', setDate(i)].join('') + "</div>";
+			html += "<div class = 'itemList'></div>";
 		}
 		$("#list").append(html);
 	}
 	
-	function showItems() {
-		MoneyService.getList(function(list){
+	function showItems(month) {
+		MoneyService.getListByMonth(month, function(list) {
 			
 			for(var i=0, len = list.length||0; i < len ; i++) {
 				let html = "";
 				html += "<div style='width:100%;' class='item' id='item" + i +"'>";
-				html += "<span>" + list[i].item +  " " + list[i].credit + "</span>"
+				html += "<span>" + list[i].item +  " " + list[i].amount + "</span>"
 				html += "</div>";
 				
-				$("#date_"+MoneyService.displayTime(list[i].date)).children(".itemList").append(html);
+				$("#date_"+MoneyService.displayTime(list[i].payDate)).children(".itemList").append(html);
 				
 				html = "";
-				html += "<div>" + list[i].item+  " " + list[i].credit + "</div>";
-				$("#list_"+MoneyService.displayTime(list[i].date)).children(".itemList").append(html);
+				html += "<div>" + list[i].item+  " " + list[i].amount + "</div>";
+				$("#list_"+MoneyService.displayTime(list[i].payDate)).next().append(html);
 			}
 			
 		});

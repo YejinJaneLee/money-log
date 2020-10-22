@@ -1,14 +1,13 @@
 package com.moneylog.controller;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,23 +28,23 @@ public class CalendarController {
 	
 	@GetMapping(value = "/calendar")
 	public void calendar () {
-		List<String> list = Arrays.asList("a","b");
 		
 	}
 	@GetMapping(value = "/manage/getExcelData")
 	public void excel () {
-		List<String> list = Arrays.asList("a","b");
 		
 	}
-	@GetMapping(value = "/list", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE})
-	public ResponseEntity<List<String>> list (Model model) {
-		List<String> list = Arrays.asList("a","b");
+	@GetMapping(value = "/list/{month}", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE})
+	public ResponseEntity<List<MoneyVO>> list (@PathVariable("month") String month) {
+		log.info("[CalendarController] list == > " + month);
 		
-		return new ResponseEntity<>(list, HttpStatus.OK);
+		return new ResponseEntity<>(service.getListByMonth(month), HttpStatus.OK);
 	}
 	
 	@PostMapping(value="/registList", consumes = "application/json", produces = {MediaType.TEXT_PLAIN_VALUE})
 	public void registExcelList (@RequestBody MoneyVO vo) {
+		log.info("[CalendarController] registExcelList == > ");
+		
 		vo.setOwnerId("test");
 		service.regist(vo);
 	}

@@ -6,7 +6,7 @@ import com.moneylog.domain.MoneyVO;
 
 public interface MoneyMapper {
 
-	public List<MoneyVO> getList(); 
+	public List<MoneyVO> getListByMonth(String month); 
 	public int insert(MoneyVO vo);
 	public int update(MoneyVO vo);
 	public int delete(int mno);

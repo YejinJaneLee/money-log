@@ -5,7 +5,7 @@ import java.util.List;
 import com.moneylog.domain.MoneyVO;
 
 public interface MoneyService {
-	public List<MoneyVO> getList();
+	public List<MoneyVO> getListByMonth(String month);
 	public MoneyVO get(int id);
 	public int regist(MoneyVO money);
 	public int modify(MoneyVO money);
